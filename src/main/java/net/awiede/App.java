@@ -17,15 +17,15 @@ import twitter4j.Status;
 
 public class App 
 {
+	//Andreas's Keys
+	private static final String CONSUMER_KEY = "eN9SQUWIl7NFuUrsEfDydDa7r";
+	private static final String CONSUMER_SECRET = "qDRhCH7K58nNUlLHc2chL6G8pdzRrJoc5BDQKCV54ycqxqOxui";
+	private static final String ACCESS_TOKEN = "456113064-dLRihnwCgwTSLCbVQkpOG5CwXO6yyK6RP7GDHqTj";
+	private static final String ACCESS_TOKEN_SECRET = "0sQ9sKnDdjW2Cxlnr46hRmgwmmKuu7Oc4QYfOkttIXmIJ";
+	
     public static void main( String[] args )
     {
-    	String CONSUMER_KEY = "eN9SQUWIl7NFuUrsEfDydDa7r";
-    	String CONSUMER_SECRET = "qDRhCH7K58nNUlLHc2chL6G8pdzRrJoc5BDQKCV54ycqxqOxui";
-    	String ACCESS_TOKEN = "456113064-dLRihnwCgwTSLCbVQkpOG5CwXO6yyK6RP7GDHqTj";
-    	String ACCESS_TOKEN_SECRET = "0sQ9sKnDdjW2Cxlnr46hRmgwmmKuu7Oc4QYfOkttIXmIJ";
-    	
-//    	String[] filters = new String[] {CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET};
-    	
+
     	System.setProperty("twitter4j.oauth.consumerKey", CONSUMER_KEY);
         System.setProperty("twitter4j.oauth.consumerSecret", CONSUMER_SECRET);
         System.setProperty("twitter4j.oauth.accessToken", ACCESS_TOKEN);
@@ -36,7 +36,17 @@ public class App
         
         JavaStreamingContext jssc = new JavaStreamingContext(conf, new Duration(1000));
         
-        JavaReceiverInputDStream<Status> twitterStream = TwitterUtils.createStream(jssc);
+        JavaDStream<Status> twitterStream = TwitterUtils.createStream(jssc);
+        
+        JavaDStream<String> statuses = twitterStream.map(new Function<Status, String>() {
+
+			private static final long serialVersionUID = -5732802589701744031L;
+
+			public String call(Status status) throws Exception {
+				return status.getText();
+			}
+		});
+        statuses.print();
         
 	      JavaDStream<Status> tweetsForLocation = twitterStream.filter(
 	                new Function<Status, Boolean>() {
@@ -53,20 +63,21 @@ public class App
 	                }
 	        );
         
-	      tweetsForLocation.foreachRDD(new Function<JavaRDD<Status>, Void>() {
+	      tweetsForLocation.foreach(new Function<JavaRDD<Status>, Void>() {
 
-			private static final long serialVersionUID = -8516662759985290176L;
+				private static final long serialVersionUID = -8516662759985290176L;
 
-			public Void call(JavaRDD<Status> rdd) throws Exception {
-				
-				List<Status> results = rdd.collect();
-				for (Status result : results) {
-					System.out.println("Country: "+result.getPlace().getCountryCode()+" Text: "+result.getText()+"\n");
+				public Void call(JavaRDD<Status> rdd) throws Exception {
+					
+					List<Status> results = rdd.collect();
+					for (Status result : results) {
+						System.out.println("Country: "+result.getPlace().getCountryCode()+" Text: "+result.getText()+"\n");
+					}
+					
+					return null;
 				}
-				
-				return null;
-			}
-		});
+			});
+	      
 	      
         jssc.start();
         
