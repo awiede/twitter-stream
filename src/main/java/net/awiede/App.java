@@ -9,12 +9,19 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.api.java.JavaDStream;
-import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.twitter.TwitterUtils;
 
 import twitter4j.Status;
 
+/**
+ * <a href="https://spark.apache.org/docs/1.6.2/streaming-programming-guide.html">Spark Programming guide</a>
+ * 
+ * <a href="https://snap.stanford.edu/data/">Stanford SNAP data</a>
+ * 
+ * @author andreas.s.wiede
+ *
+ */
 public class App 
 {
 	//Andreas's Keys
@@ -22,6 +29,15 @@ public class App
 	private static final String CONSUMER_SECRET = "qDRhCH7K58nNUlLHc2chL6G8pdzRrJoc5BDQKCV54ycqxqOxui";
 	private static final String ACCESS_TOKEN = "456113064-dLRihnwCgwTSLCbVQkpOG5CwXO6yyK6RP7GDHqTj";
 	private static final String ACCESS_TOKEN_SECRET = "0sQ9sKnDdjW2Cxlnr46hRmgwmmKuu7Oc4QYfOkttIXmIJ";
+	
+	
+	private static boolean filterByCountry(Status status) {
+        if (status.getPlace() != null) {
+            return true;
+        } else {
+            return false;
+        }		
+	}
 	
     public static void main( String[] args )
     {
@@ -38,15 +54,14 @@ public class App
         
         JavaDStream<Status> twitterStream = TwitterUtils.createStream(jssc);
         
-        JavaDStream<String> statuses = twitterStream.map(new Function<Status, String>() {
-
-			private static final long serialVersionUID = -5732802589701744031L;
-
-			public String call(Status status) throws Exception {
-				return status.getText();
-			}
-		});
-        statuses.print();
+//        JavaDStream<String> statuses = twitterStream.map(new Function<Status, String>() {
+//
+//			private static final long serialVersionUID = -5732802589701744031L;
+//
+//			public String call(Status status) throws Exception {
+//				return status.getText();
+//			}
+//		});
         
 	      JavaDStream<Status> tweetsForLocation = twitterStream.filter(
 	                new Function<Status, Boolean>() {
@@ -54,11 +69,7 @@ public class App
 	                	private static final long serialVersionUID = -4258850438617506640L;
 
 						public Boolean call(Status status){
-	                        if (status.getPlace() != null) {
-	                            return true;
-	                        } else {
-	                            return false;
-	                        }
+	                        return filterByCountry(status);
 	                    }
 	                }
 	        );
@@ -71,16 +82,15 @@ public class App
 					
 					List<Status> results = rdd.collect();
 					for (Status result : results) {
-						System.out.println("Country: "+result.getPlace().getCountryCode()+" Text: "+result.getText()+"\n");
+						String countryCode = (result.getPlace() == null) ? "N/A" : result.getPlace().getCountryCode();
+						System.out.println("Country: "+countryCode+" Text: "+result.getText());
 					}
 					
 					return null;
 				}
 			});
 	      
-	      
         jssc.start();
-        
         
     }
 }
