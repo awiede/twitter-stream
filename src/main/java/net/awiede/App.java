@@ -24,12 +24,6 @@ import twitter4j.Status;
  */
 public class App 
 {
-	//Andreas's Keys
-	private static final String CONSUMER_KEY = "eN9SQUWIl7NFuUrsEfDydDa7r";
-	private static final String CONSUMER_SECRET = "qDRhCH7K58nNUlLHc2chL6G8pdzRrJoc5BDQKCV54ycqxqOxui";
-	private static final String ACCESS_TOKEN = "456113064-dLRihnwCgwTSLCbVQkpOG5CwXO6yyK6RP7GDHqTj";
-	private static final String ACCESS_TOKEN_SECRET = "0sQ9sKnDdjW2Cxlnr46hRmgwmmKuu7Oc4QYfOkttIXmIJ";
-	
 	
 	private static boolean filterByCountry(Status status) {
         if (status.getPlace() != null) {
@@ -42,10 +36,10 @@ public class App
     public static void main( String[] args )
     {
 
-    	System.setProperty("twitter4j.oauth.consumerKey", CONSUMER_KEY);
-        System.setProperty("twitter4j.oauth.consumerSecret", CONSUMER_SECRET);
-        System.setProperty("twitter4j.oauth.accessToken", ACCESS_TOKEN);
-        System.setProperty("twitter4j.oauth.accessTokenSecret", ACCESS_TOKEN_SECRET);
+    	System.setProperty("twitter4j.oauth.consumerKey", System.getProperty("CONSUMER_KEY"));
+        System.setProperty("twitter4j.oauth.consumerSecret", System.getProperty("CONSUMER_SECRET"));
+        System.setProperty("twitter4j.oauth.accessToken", System.getProperty("ACCESS_TOKEN"));
+        System.setProperty("twitter4j.oauth.accessTokenSecret", System.getProperty("ACCESS_TOKEN_SECRET"));
         Logger.getRootLogger().setLevel(Level.ERROR);
     	
         SparkConf conf = new SparkConf().setAppName("awiede-twitter-stream").setMaster("local[2]");
